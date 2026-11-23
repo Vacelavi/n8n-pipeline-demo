@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest new user-visible behaviour
+title: "[Feature]: "
+labels: []
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: User need
+      description: Explain the problem rather than only the proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria

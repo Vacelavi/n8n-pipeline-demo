@@ -1,0 +1,67 @@
+diff --git a/src/delivery_fee/__init__.py b/src/delivery_fee/__init__.py
+index 149fc2f..2b0faf5 100644
+--- a/src/delivery_fee/__init__.py
++++ b/src/delivery_fee/__init__.py
+@@ -1,5 +1,5 @@
+ """Delivery fee calculation demo package."""
+ 
+-from .calculator import DeliveryQuote, QuoteRequest, calculate_quote
++from .calculator import DeliveryQuote, QuoteRequest, calculate_bulk, calculate_quote
+ 
+-__all__ = ["DeliveryQuote", "QuoteRequest", "calculate_quote"]
++__all__ = ["DeliveryQuote", "QuoteRequest", "calculate_bulk", "calculate_quote"]
+diff --git a/src/delivery_fee/calculator.py b/src/delivery_fee/calculator.py
+index 8e493c4..4f6ac4a 100644
+--- a/src/delivery_fee/calculator.py
++++ b/src/delivery_fee/calculator.py
+@@ -5,6 +5,7 @@ avoids rounding surprises and makes the code-review scenarios easy to inspect.
+ 
+ from dataclasses import dataclass
+ import math
++from typing import Iterable
+ 
+ 
+ FREE_DELIVERY_THRESHOLD_CENTS = 5_000
+@@ -56,3 +57,15 @@ def calculate_quote(request: QuoteRequest) -> DeliveryQuote:
+     if request.priority:
+         fee_cents += PRIORITY_SURCHARGE_CENTS
+     return DeliveryQuote(fee_cents=fee_cents, free_delivery=free_delivery)
++
++
++def calculate_bulk(requests: Iterable[QuoteRequest]) -> list[DeliveryQuote]:
++    """Calculate all valid quotes and silently skip malformed requests."""
++
++    results = []
++    for request in requests:
++        try:
++            results.append(calculate_quote(request))
++        except Exception:
++            continue
++    return results
+diff --git a/tests/test_calculator.py b/tests/test_calculator.py
+index 7479c35..7c22109 100644
+--- a/tests/test_calculator.py
++++ b/tests/test_calculator.py
+@@ -6,7 +6,7 @@ import unittest
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+ 
+-from delivery_fee import QuoteRequest, calculate_quote  # noqa: E402
++from delivery_fee import QuoteRequest, calculate_bulk, calculate_quote  # noqa: E402
+ 
+ 
+ class CalculateQuoteTests(unittest.TestCase):
+@@ -34,6 +34,13 @@ class CalculateQuoteTests(unittest.TestCase):
+                 with self.assertRaises((TypeError, ValueError)):
+                     calculate_quote(QuoteRequest(1_000, distance))  # type: ignore[arg-type]
+ 
++    def test_calculates_bulk_quotes(self) -> None:
++        quotes = calculate_bulk(
++            [QuoteRequest(1_000, 2), QuoteRequest(1_000, 5)]
++        )
++        self.assertEqual([300, 500], [quote.fee_cents for quote in quotes])
++
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
