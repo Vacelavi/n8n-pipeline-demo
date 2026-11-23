@@ -11,12 +11,18 @@ import math
 FREE_DELIVERY_THRESHOLD_CENTS = 5_000
 PRIORITY_SURCHARGE_CENTS = 250
 
+PROMOTIONS = {
+    "SAVE10": 10,
+    "HALFOFF": 50,
+}
+
 
 @dataclass(frozen=True, slots=True)
 class QuoteRequest:
     subtotal_cents: int
     distance_km: float
     priority: bool = False
+    promo_code: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,4 +62,7 @@ def calculate_quote(request: QuoteRequest) -> DeliveryQuote:
     fee_cents = 0 if free_delivery else _distance_fee_cents(request.distance_km)
     if request.priority:
         fee_cents += PRIORITY_SURCHARGE_CENTS
+    if request.promo_code:
+        discount_dollars = PROMOTIONS.get(request.promo_code, 0)
+        fee_cents = max(0, fee_cents - discount_dollars)
     return DeliveryQuote(fee_cents=fee_cents, free_delivery=free_delivery)

@@ -34,6 +34,11 @@ class CalculateQuoteTests(unittest.TestCase):
                 with self.assertRaises((TypeError, ValueError)):
                     calculate_quote(QuoteRequest(1_000, distance))  # type: ignore[arg-type]
 
+    def test_applies_save10_promotion(self) -> None:
+        quote = calculate_quote(QuoteRequest(1_000, 2, promo_code="SAVE10"))
+        self.assertEqual(290, quote.fee_cents)
+
+
 
 if __name__ == "__main__":
     unittest.main()
