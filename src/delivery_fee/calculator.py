@@ -38,8 +38,6 @@ def _validate_request(request: QuoteRequest) -> None:
         raise TypeError("distance_km must be a number")
     if not math.isfinite(request.distance_km) or request.distance_km <= 0:
         raise ValueError("distance_km must be finite and positive")
-    if not isinstance(request.priority, bool):
-        raise TypeError("priority must be a boolean")
 
 
 def _distance_fee_cents(distance_km: float) -> int:
