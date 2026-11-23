@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from delivery_fee import QuoteRequest, calculate_quote  # noqa: E402
+from delivery_fee import QuoteRequest, calculate_bulk, calculate_quote  # noqa: E402
 
 
 class CalculateQuoteTests(unittest.TestCase):
@@ -33,6 +33,13 @@ class CalculateQuoteTests(unittest.TestCase):
             with self.subTest(distance=distance):
                 with self.assertRaises((TypeError, ValueError)):
                     calculate_quote(QuoteRequest(1_000, distance))  # type: ignore[arg-type]
+
+    def test_calculates_bulk_quotes(self) -> None:
+        quotes = calculate_bulk(
+            [QuoteRequest(1_000, 2), QuoteRequest(1_000, 5)]
+        )
+        self.assertEqual([300, 500], [quote.fee_cents for quote in quotes])
+
 
 
 if __name__ == "__main__":

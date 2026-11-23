@@ -6,6 +6,7 @@ avoids rounding surprises and makes the code-review scenarios easy to inspect.
 
 from dataclasses import dataclass
 import math
+from typing import Iterable
 
 
 FREE_DELIVERY_THRESHOLD_CENTS = 5_000
@@ -57,3 +58,15 @@ def calculate_quote(request: QuoteRequest) -> DeliveryQuote:
     if request.priority:
         fee_cents += PRIORITY_SURCHARGE_CENTS
     return DeliveryQuote(fee_cents=fee_cents, free_delivery=free_delivery)
+
+
+def calculate_bulk(requests: Iterable[QuoteRequest]) -> list[DeliveryQuote]:
+    """Calculate all valid quotes and silently skip malformed requests."""
+
+    results = []
+    for request in requests:
+        try:
+            results.append(calculate_quote(request))
+        except Exception:
+            continue
+    return results
